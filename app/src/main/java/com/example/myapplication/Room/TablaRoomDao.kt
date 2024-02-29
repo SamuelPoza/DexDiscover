@@ -1,5 +1,6 @@
 package com.example.myapplication.Room
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -10,7 +11,7 @@ import androidx.room.Update
 interface TablaRoomDao {
 
     @Query("SELECT * FROM TablaRoom")
-    fun getAll(): List<TablaRoom>
+    fun getAll(): LiveData<List<TablaRoom>>
 
     @Query("SELECT * FROM TablaRoom WHERE id = :id")
     fun getById(id: Int): TablaRoom

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">DexDiscover_Tarea4</string>
+
+    <string name="tipos">Tipos:</string>
+    <string name="debilidades">Debilidades:</string>
+    <string name="nombre">Nombre:</string>
+    <string name="nombreApp">DexDiscover</string>
+
 </resources>
