@@ -13,8 +13,8 @@ interface TablaRoomDao {
     @Query("SELECT * FROM TablaRoom")
     fun getAll(): LiveData<List<TablaRoom>>
 
-    @Query("SELECT * FROM TablaRoom WHERE id = :id")
-    fun getById(id: Int): TablaRoom
+    @Query("SELECT * FROM TablaRoom WHERE name = :name")
+    fun getByName(name: String): TablaRoom
 
     @Update
     fun update (tablaRom: TablaRoom)

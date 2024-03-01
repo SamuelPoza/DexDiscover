@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -67,7 +69,7 @@ import javax.inject.Inject
 
 var variableGlobalTipo1 by mutableStateOf("")
 var variableGlobalTipo2 by mutableStateOf("")
-var variableGlobalDebilidad1 by mutableStateOf("")
+var variableGlobalDebilidades by mutableStateOf("")
 var variableGlobalNombre by mutableStateOf("")
 
 
@@ -76,12 +78,10 @@ var variableGlobalNombre by mutableStateOf("")
 fun FirstScreen(navController: NavController) {
 
     val viewModel: FirstScreenViewModel = viewModel() // Obtiene una instancia del ViewModel
+
     MyScaffoldFirstScreen(navController, viewModel)
 
 }
-
-//Creo un view model que exporta el estado de cada composable
-
 
 @HiltViewModel
 class MyViewModel @Inject constructor() : ViewModel() {
@@ -101,8 +101,6 @@ class MyViewModel @Inject constructor() : ViewModel() {
     }
 }
 
-
-
 // Esta es mi Screen principal
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,7 +109,6 @@ class MyViewModel @Inject constructor() : ViewModel() {
 fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenViewModel) {
 
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -208,7 +205,7 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                 ) {
                     Column {
                         Text(
-                            text = stringResource(id = R.string.nombre) + variableGlobalNombre,
+                            text = stringResource(id = R.string.nombre) + " " + variableGlobalNombre,
                             fontSize = 15.sp,
                             color = Color.White,
                             modifier = Modifier
@@ -219,7 +216,7 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                         )
 
                         Text(
-                            text = stringResource(id = R.string.tipos) + variableGlobalTipo1 + variableGlobalTipo2,
+                            text = stringResource(id = R.string.tipos) + " " + variableGlobalTipo1 + ", " + variableGlobalTipo2,
                             fontSize = 15.sp,
                             color = Color.White,
                             modifier = Modifier
@@ -230,7 +227,7 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                         )
 
                         Text(
-                            text = stringResource(id = R.string.debilidades) + variableGlobalDebilidad1,
+                            text = stringResource(id = R.string.debilidades) + " " + variableGlobalDebilidades,
                             fontSize = 15.sp,
                             color = Color.White,
                             modifier = Modifier
@@ -244,10 +241,11 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
             }
         },
         floatingActionButton = {
-            // Botón flotante, si es necesario
-            // ...
+
         }
     ) {
+
+        // Lista con todas las imágenes
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier
@@ -273,8 +271,6 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                             .height(49.dp)
                             .width(120.dp)
                             .background(Color(0xFF333333))
-
-
                             .clickable {
 
                             },
@@ -298,7 +294,6 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                             .height(49.dp)
                             .width(120.dp)
                             .background(Color(0xFF333333))
-
                             .clickable {
 
                             },
@@ -322,7 +317,6 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                             .height(49.dp)
                             .width(120.dp)
                             .background(Color(0xFF333333))
-
                             .clickable {
 
                             },
@@ -346,72 +340,22 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                             .height(110.dp)
                             .width(120.dp)
                             .background(Color(0xFFBDFCC9))
-
-
                             .clickable {
 
-                                // Recibe los valores de la tabla SQL y los paso a una variable global
-
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 0, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 0, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Bulbasaur") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Bulbasaur") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        // Recibe los datos de la tabla Room
-                                        // Solo se lo implemente a algunos porque aun no tengo clara la interfaz/función que va a tener al final
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Bulbasaur"
-                                        val pokemon = dao.getById(1)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 =
-                                            "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
-
                             },
                     )
                 }
             }
+
 
             item {
 
@@ -432,48 +376,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 0, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 0, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Ivysaur") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Ivysaur") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Ivysaur"
-                                        val pokemon = dao.getById(2)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -500,47 +409,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 0, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 0, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Venosaur") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Venosaur") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Venosaur"
-                                        val pokemon = dao.getById(3)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -566,37 +441,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 1, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Charmander") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Charmander") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 1", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Charmander"
-                                        val pokemon = dao.getById(4)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -623,36 +474,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 1", null) // Se cambia el OFFSET 1 por otro numero para filas
+                                viewModel.consultarTipo1(context, 1, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Charmeleon") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Charmeleon") { nombre -> variableGlobalNombre = nombre
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
 
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Charmeleon"
-                                        val pokemon = dao.getById(5)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -679,61 +507,22 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 1",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 1, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Charizard") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Charizard") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Charizard"
-                                        val pokemon = dao.getById(6)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
+
                             },
                     )
                 }
             }
+
+
 
             item {
 
@@ -754,40 +543,15 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 1, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Squirtle") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Squirtle") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 1", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Squirtle"
-                                        val pokemon = dao.getById(7)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
-
                             },
                     )
                 }
@@ -812,37 +576,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 1, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Wartortle") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Wartortle") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 1", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Wartortle"
-                                        val pokemon = dao.getById(8)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
 
@@ -870,37 +610,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 0, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Blastoise") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Blastoise") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 1", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Blastoise"
-                                        val pokemon = dao.getById(9)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -927,36 +643,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
+                                viewModel.consultarTipo1(context, 2, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Caterpie") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Caterpie") { nombre -> variableGlobalNombre = nombre
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
 
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Caterpie"
-                                        val pokemon = dao.getById(10)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -983,36 +676,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
+                                viewModel.consultarTipo1(context, 2, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Metapod") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Metapod") { nombre -> variableGlobalNombre = nombre
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
 
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Metapod"
-                                        val pokemon = dao.getById(11)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1039,55 +709,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 2, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Butterfree") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Butterfree") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Butterfree"
-                                        val pokemon = dao.getById(12)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1114,48 +742,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 2, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 0, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Weedle") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Weedle") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Weedle"
-                                        val pokemon = dao.getById(13)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1182,48 +775,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 2, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 0, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Kakuna") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Kakuna") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Kakuna"
-                                        val pokemon = dao.getById(14)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1250,48 +808,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 2, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 0, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Beedrill") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Beedrill") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Beedrill"
-                                        val pokemon = dao.getById(15)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1318,48 +841,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Pidgey") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Pidgey") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Pidgey"
-                                        val pokemon = dao.getById(16)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1386,48 +874,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Pidgeotto") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Pidgeotto") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Pidgeotto"
-                                        val pokemon = dao.getById(17)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1454,48 +907,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Pidgeot") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Pidgeot") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Pidgeot"
-                                        val pokemon = dao.getById(18)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
 
@@ -1523,37 +941,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Rattata") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Rattata") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Rattata"
-                                        val pokemon = dao.getById(19)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1} ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1580,37 +974,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Raticate") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Raticate") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Raticate"
-                                        val pokemon = dao.getById(20)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1} ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1637,48 +1007,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Spearrow") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Spearrow") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Spearrow"
-                                        val pokemon = dao.getById(21)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1697,7 +1032,7 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                     Image(
                         painter = painterResource(R.drawable.fearrow),
-                        contentDescription = "Imagen Fearrow",
+                        contentDescription = "Imagen Fearow",
                         modifier = Modifier
                             .height(110.dp)
                             .width(120.dp)
@@ -1705,48 +1040,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
-
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
+                                viewModel.consultarTipo1(context, 3, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    viewModel.consultarTipo2(context, 3, 1) { tipo2 -> variableGlobalTipo2 = tipo2
+                                        viewModel.consultarDebilidades(context, "Fearow") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Fearow") { nombre -> variableGlobalNombre = nombre
 
                                             }
                                         }
-
-                                        cursor?.close()
-
-                                        val cursor2 = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 3", null) // Se cambia el OFFSET 1 por otro numero para filas
-
-                                        cursor2?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo2 = ", " + primerValor
-                                            }
-                                        }
-
-                                        cursor2?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Fearow"
-                                        val pokemon = dao.getById(22)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1773,37 +1073,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 0, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Ekans") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Ekans") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Ekans"
-                                        val pokemon = dao.getById(23)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1830,37 +1106,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 0, 1) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Arbok") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Arbok") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 0", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(1) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Arbok"
-                                        val pokemon = dao.getById(24)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1}, ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1887,37 +1139,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 2, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Pikachu") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Pikachu") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Pikachu"
-                                        val pokemon = dao.getById(25)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1} ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -1944,37 +1172,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 2, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Raichu") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Raichu") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 2", null) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor = c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Raichu"
-                                        val pokemon = dao.getById(26)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1} ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
                                     }
                                 }
                             },
@@ -2001,42 +1205,13 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-                                coroutineScope.launch {
-                                    withContext(Dispatchers.IO) {
+                                viewModel.consultarTipo1(context, 4, 0) { tipo1 -> variableGlobalTipo1 = tipo1
+                                    variableGlobalTipo2 = ""
+                                        viewModel.consultarDebilidades(context, "Sandshrew") { debilidades -> variableGlobalDebilidades = debilidades
+                                            viewModel.consultarNombre(context, "Sandshrew") { nombre -> variableGlobalNombre = nombre
 
-                                        val dbHelper = BaseDeDatosHelper(context)
-                                        val readableDB = dbHelper.readableDatabase
-                                        val cursor = readableDB.rawQuery(
-                                            "SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET 4",
-                                            null
-                                        ) // Se cambia el OFFSET 1 por otro numero para filas
 
-                                        cursor?.use { c ->
-                                            if (c.moveToFirst()) {
-                                                val primerValor =
-                                                    c.getString(0) // se cambia el 1 por otro numero para cambiar columna
-                                                // Guarda el valor de la segunda columna de la segunda fila en globalVariable
-                                                variableGlobalTipo1 = primerValor
-                                                variableGlobalTipo2 = ""
-
-                                            }
                                         }
-
-                                        cursor?.close()
-
-                                        val database = Room.databaseBuilder(
-                                            context,
-                                            TablaRoomDatos::class.java, "debilidades"
-                                        ).build()
-
-                                        val dao = database.tablaRoomDao()
-
-                                        val pokemonName = "Sandshrew"
-                                        val pokemon = dao.getById(27)
-                                        println("La debilidad 1 de $pokemonName es: ${pokemon?.debilidad1}")
-                                        variableGlobalDebilidad1 = "${pokemon?.debilidad1} ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}"
-                                        variableGlobalNombre = pokemonName
-
                                     }
                                 }
 
@@ -2064,7 +1239,6 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-
                             },
                     )
                 }
@@ -2089,7 +1263,6 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
 
                             .clickable {
 
-
                             },
                     )
                 }
@@ -2113,7 +1286,6 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                             .background(Color(0xFF333333))
 
                             .clickable {
-
 
                             }
                     )

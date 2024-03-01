@@ -17,6 +17,7 @@ class BaseDeDatosRepositorio(context: Context) {
         db.insert(BaseDeDatos.TABLA_NOMBRE, null, values)
     }
 
+    // Por si hace falta en un futuro
     fun obtenerTodosLosTipos(): Cursor {
         val db = dbHelper.readableDatabase
         return db.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE}", null)

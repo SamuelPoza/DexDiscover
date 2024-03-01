@@ -1,13 +1,94 @@
 package com.example.myapplication.screens
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.room.Room
+import com.example.myapplication.Room.TablaRoomDatos
+import com.example.myapplication.baseDeDatos.BaseDeDatos
+import com.example.myapplication.baseDeDatos.BaseDeDatosHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 @HiltViewModel
 class FirstScreenViewModel @Inject constructor() : ViewModel() {
+
+    // Funcion para conseguir el tipo 1 de la tabla SQL
+    fun consultarTipo1(context: Context, fila1: Int, columna1: Int, callback: (String) -> Unit) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val dbHelper = BaseDeDatosHelper(context)
+                val readableDB = dbHelper.readableDatabase
+
+                val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET $fila1", null)
+
+                cursor?.use { c ->
+                    if (c.moveToFirst()) {
+                        val primerValor = c.getString(columna1)
+                        callback(primerValor)
+                    }
+                }
+
+                cursor?.close()
+            }
+        }
+    }
+
+    // Funcion para conseguir el tipo 2 de la tabla SQL
+    fun consultarTipo2(context: Context, fila1: Int, columna1: Int, callback: (String) -> Unit) {
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val dbHelper = BaseDeDatosHelper(context)
+                val readableDB = dbHelper.readableDatabase
+
+                val cursor = readableDB.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE} LIMIT 1 OFFSET $fila1", null)
+
+                cursor?.use { c ->
+                    if (c.moveToFirst()) {
+                        val primerValor = c.getString(columna1)
+                        callback(primerValor)
+                    }
+                }
+
+                cursor?.close()
+            }
+        }
+
+    }
+
+    // Funcion para conseguir las debilidades de la tabla Room
+    fun consultarDebilidades(context: Context, nombre: String, callback: (String) -> Unit) {
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+
+                val database = Room.databaseBuilder(
+                    context,
+                    TablaRoomDatos::class.java, "debilidades"
+                ).build()
+
+                val dao = database.tablaRoomDao()
+
+                val pokemon = dao.getByName(nombre)
+                callback("${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}")
+            }
+
+        }
+
+    }
+
+    // Funcion para conseguir el nombre de la tabla Room
+    fun consultarNombre(context: Context, nombre: String, callback: (String) -> Unit) {
+
+        callback(nombre)
+
+    }
 
     // Propiedades internas para el estado
     private val _topAppBarTitle = mutableStateOf("DEXDISCOVER")
@@ -43,9 +124,6 @@ class FirstScreenViewModel @Inject constructor() : ViewModel() {
     internal fun cambiaImagen(newImageUrl: String) {
         _imageState.value = newImageUrl
     }
-
-
-
 
     // Variable global en el ViewModel
     val myGlobalVariable = mutableStateOf("hola")

@@ -11,6 +11,7 @@ class TablaRoomRepositorio(context: Context) {
         dao.insert(tipo)
     }
 
+    // Por si hace falta en un futuro
     fun obtenerTodosLosTipos(): LiveData<List<TablaRoom>> {
         return dao.getAll()
     }

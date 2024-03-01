@@ -17,5 +17,6 @@ class TablaRoomViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    // Por si hace falta en un futuro
     fun obtenerTodosLosTipos() = repositorio.obtenerTodosLosTipos()
 }

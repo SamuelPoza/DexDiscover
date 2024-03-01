@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
         datosTablaRoom()
         llamarCatsApi()
 
-        // Aquí implementa el SharedPreferences
+        // Aquí implemento el SharedPreferences
 
         val sharedPrefs = getSharedPreferences("Shared1", Context.MODE_PRIVATE)
         sharedPrefs.edit().putInt("key1", 1).apply()
@@ -43,11 +43,14 @@ class MainActivity : ComponentActivity() {
         Log.d("Lyfecycle", "onCreate: $savedShare")
 
         setContent {
+
             // Llama al AppNavigation por temas de organización
+
             AppNavigation()
         }
     }
 
+    // Introduce información el la base de datos SQL
     private fun datosTablaSQL() {
 
         baseDeDatosViewModel.insertarTipo("Planta", "Veneno")
@@ -57,6 +60,7 @@ class MainActivity : ComponentActivity() {
         baseDeDatosViewModel.insertarTipo("Tierra", "Hada")
     }
 
+    // Introduce información el la base de datos Room
     private fun datosTablaRoom() {
         val tiposAInsertar = listOf(
             TablaRoom(name = "Bulbasaur", debilidad1 = "Fuego", debilidad2 = "Hielo", debilidad3 = "Volador", debilidad4 = "Psiquico"),
@@ -67,16 +71,16 @@ class MainActivity : ComponentActivity() {
             TablaRoom(name = "Charizard", debilidad1 = "Agua", debilidad2 = "Eléctrico", debilidad3 = "Roca", debilidad4 = ""),
             TablaRoom(name = "Squirtle", debilidad1 = "Planta", debilidad2 = "Eléctrico", debilidad3 = "", debilidad4 = ""),
             TablaRoom(name = "Wartortle", debilidad1 = "Planta", debilidad2 = "Eléctrico", debilidad3 = "", debilidad4 = ""),
-            TablaRoom(name = "Bastoise", debilidad1 = "Planta", debilidad2 = "Eléctrico", debilidad3 = "", debilidad4 = ""),
+            TablaRoom(name = "Blastoise", debilidad1 = "Planta", debilidad2 = "Eléctrico", debilidad3 = "", debilidad4 = ""),
             TablaRoom(name = "Caterpie", debilidad1 = "Fuego", debilidad2 = "Volador", debilidad3 = "Roca", debilidad4 = ""),
             TablaRoom(name = "Metapod", debilidad1 = "Fuego", debilidad2 = "Volador", debilidad3 = "Roca", debilidad4 = ""),
             TablaRoom(name = "Butterfree", debilidad1 = "Fuego", debilidad2 = "Eléctrico", debilidad3 = "Hielo", debilidad4 = "Volador"),
             TablaRoom(name = "Weedle", debilidad1 = "Fuego", debilidad2 = "Volador", debilidad3 = "Psiquico", debilidad4 = "Roca"),
             TablaRoom(name = "Kakuna", debilidad1 = "Fuego", debilidad2 = "Volador", debilidad3 = "Psiquico", debilidad4 = "Roca"),
-            TablaRoom(name = "Beedrill ", debilidad1 = "Fuego", debilidad2 = "Volador", debilidad3 = "Psiquico", debilidad4 = "Roca"),
-            TablaRoom(name = "Pidgey ", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
-            TablaRoom(name = "Pidgeotto ", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
-            TablaRoom(name = "Pidgeot ", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
+            TablaRoom(name = "Beedrill", debilidad1 = "Fuego", debilidad2 = "Volador", debilidad3 = "Psiquico", debilidad4 = "Roca"),
+            TablaRoom(name = "Pidgey", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
+            TablaRoom(name = "Pidgeotto", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
+            TablaRoom(name = "Pidgeot", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
             TablaRoom(name = "Rattata", debilidad1 = "Lucha", debilidad2 = "", debilidad3 = "", debilidad4 = ""),
             TablaRoom(name = "Raticate", debilidad1 = "Lucha", debilidad2 = "", debilidad3 = "", debilidad4 = ""),
             TablaRoom(name = "Spearrow", debilidad1 = "Eléctrico", debilidad2 = "Hielo", debilidad3 = "Roca", debilidad4 = ""),
@@ -89,12 +93,13 @@ class MainActivity : ComponentActivity() {
             TablaRoom(name = "Sandslash", debilidad1 = "Agua", debilidad2 = "Planta", debilidad3 = "Hielo", debilidad4 = "")
         )
 
-        // Insertar los datos en la tabla Room
+        // Inserta los datos en la tabla Room
         tiposAInsertar.forEach { tipo ->
             tablaRoomViewModel.insertarTipo(tipo)
         }
     }
 
+    // Se encarga de que solo se llame a la API una vez
     private fun llamarCatsApi() {
         if (!catsFactCalled) {
             lifecycleScope.launch(Dispatchers.IO) {
