@@ -13,14 +13,20 @@ import com.example.myapplication.Room.TablaRoomViewModel
 import com.example.myapplication.api.getCatsFact
 import com.example.myapplication.baseDeDatos.BaseDeDatosViewModel
 import com.example.myapplication.navigation.AppNavigation
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var tablaRoomViewModel: TablaRoomViewModel
+
+    @Inject
+    lateinit var baseDeDatosViewModel: BaseDeDatosViewModel
+
     private var catsFactCalled = false
-    private lateinit var tablaRoomViewModel: TablaRoomViewModel
-    private lateinit var baseDeDatosViewModel: BaseDeDatosViewModel
 
     @SuppressLint("Range")
     override fun onCreate(savedInstanceState: Bundle?) {
