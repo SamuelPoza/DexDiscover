@@ -76,7 +76,7 @@ class FirstScreenViewModel @Inject constructor() : ViewModel() {
                 val dao = database.tablaRoomDao()
 
                 val pokemon = dao.getByName(nombre)
-                callback("${pokemon?.debilidad1}, ${pokemon?.debilidad2}, ${pokemon?.debilidad3}, ${pokemon?.debilidad4}")
+                callback("${pokemon?.debilidad1} ${pokemon?.debilidad2} ${pokemon?.debilidad3} ${pokemon?.debilidad4}")
             }
 
         }

@@ -7,16 +7,20 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.R
+import com.example.myapplication.data.sources.api.CatFactApi
 import com.example.myapplication.data.sources.db.Room.TablaRoom
 import com.example.myapplication.data.sources.db.Room.TablaRoomViewModel
-import com.example.myapplication.data.sources.api.getCatsFact
+//import com.example.myapplication.data.sources.api.getCatsFact
 import com.example.myapplication.data.sources.db.SQLite.BaseDeDatosViewModel
 import com.example.myapplication.screen.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -28,6 +32,9 @@ class MainActivity : ComponentActivity() {
 
     //@Inject
     lateinit var baseDeDatosViewModel: BaseDeDatosViewModel
+
+    @Inject
+    lateinit var catFactApi: CatFactApi
 
     @SuppressLint("Range")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +61,8 @@ class MainActivity : ComponentActivity() {
             // Llama al AppNavigation por temas de organización
 
             AppNavigation()
+
+            //mainActivityViewModel.insertarDatos()
         }
     }
 
@@ -66,6 +75,7 @@ class MainActivity : ComponentActivity() {
         baseDeDatosViewModel.insertarTipo("Normal", "Volador")
         baseDeDatosViewModel.insertarTipo("Tierra", "Hada")
     }
+
 
     // Introduce información el la base de datos Room
     private fun datosTablaRoom() {
@@ -106,15 +116,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Se encarga de que solo se llame a la API una vez
+    // Llama a la API de CatFact
     private fun llamarCatsApi() {
         if (!catsFactCalled) {
             lifecycleScope.launch(Dispatchers.IO) {
-                getCatsFact()
+                val fact = catFactApi.getCatFact()
+                Log.d("CatFactApi", "Cat fact: $fact")
             }
             catsFactCalled = true
         }
     }
 }
-
-

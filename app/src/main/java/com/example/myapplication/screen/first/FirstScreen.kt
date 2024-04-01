@@ -203,7 +203,7 @@ fun MyScaffoldFirstScreen(navController: NavController, viewModel: FirstScreenVi
                         )
 
                         Text(
-                            text = stringResource(id = R.string.tipos) + " " + variableGlobalTipo1 + ", " + variableGlobalTipo2,
+                            text = stringResource(id = R.string.tipos) + " " + variableGlobalTipo1 + " " + variableGlobalTipo2,
                             fontSize = 15.sp,
                             color = Color.White,
                             modifier = Modifier
