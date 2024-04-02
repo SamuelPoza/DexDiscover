@@ -25,8 +25,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    //@Inject
-    lateinit var tablaRoomViewModel: TablaRoomViewModel
+    private val tablaRoomViewModel: TablaRoomViewModel by viewModels()
 
     private var catsFactCalled = false
 
@@ -40,7 +39,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        tablaRoomViewModel = ViewModelProvider(this).get(TablaRoomViewModel::class.java)
+
+
+        //tablaRoomViewModel = ViewModelProvider(this).get(TablaRoomViewModel::class.java)
 
         baseDeDatosViewModel = ViewModelProvider(this).get(BaseDeDatosViewModel::class.java)
 

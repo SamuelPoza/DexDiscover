@@ -16,7 +16,6 @@ abstract class TablaRoomDatos : RoomDatabase(){
 
     abstract fun tablaRoomDao(): TablaRoomDao
 
-    //De aqui para abajo nuevo
     companion object {
         @Volatile
         private var INSTANCE: TablaRoomDatos? = null

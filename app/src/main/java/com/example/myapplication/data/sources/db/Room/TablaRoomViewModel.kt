@@ -3,12 +3,16 @@ package com.example.myapplication.data.sources.db.Room
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class TablaRoomViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repositorio: TablaRoomRepositorio = TablaRoomRepositorio(application)
+@HiltViewModel
+class TablaRoomViewModel @Inject constructor(
+    application: Application,
+    private val repositorio: TablaRoomRepositorio
+) : AndroidViewModel(application) {
 
     fun insertarTipo(tipo: TablaRoom) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -16,6 +20,5 @@ class TablaRoomViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // Por si hace falta en un futuro
-    fun obtenerTodosLosTipos() = repositorio.obtenerTodosLosTipos()
 }
+
