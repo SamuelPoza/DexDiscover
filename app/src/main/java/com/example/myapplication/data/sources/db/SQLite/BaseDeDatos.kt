@@ -4,8 +4,6 @@ object BaseDeDatos {
     const val TABLA_NOMBRE = "Tipos"
     const val COLUMNA_TIPO_1 = "Tipo_1"
     const val COLUMNA_TIPO_2 = "Tipo_2"
-
-
 }
 
 const val SQL_CREATE_ENTRIES =
@@ -15,6 +13,4 @@ const val SQL_CREATE_ENTRIES =
         ${BaseDeDatos.COLUMNA_TIPO_2} TEXT
     );
 """
-
-const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${BaseDeDatos.TABLA_NOMBRE}"
 

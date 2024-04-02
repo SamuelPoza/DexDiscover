@@ -2,7 +2,6 @@ package com.example.myapplication.data.sources.db.SQLite
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 
 class BaseDeDatosRepositorio(context: Context) {
     private val dbHelper: BaseDeDatosHelper = BaseDeDatosHelper(context)
@@ -14,12 +13,6 @@ class BaseDeDatosRepositorio(context: Context) {
             put(BaseDeDatos.COLUMNA_TIPO_2, tipo2)
         }
         db.insert(BaseDeDatos.TABLA_NOMBRE, null, values)
-    }
-
-    // Por si hace falta en un futuro
-    fun obtenerTodosLosTipos(): Cursor {
-        val db = dbHelper.readableDatabase
-        return db.rawQuery("SELECT * FROM ${BaseDeDatos.TABLA_NOMBRE}", null)
     }
 
 }

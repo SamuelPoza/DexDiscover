@@ -8,13 +8,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.myapplication.R
 import com.example.myapplication.data.sources.api.CatFactApi
 import com.example.myapplication.data.sources.db.Room.TablaRoom
 import com.example.myapplication.data.sources.db.Room.TablaRoomViewModel
-//import com.example.myapplication.data.sources.api.getCatsFact
 import com.example.myapplication.data.sources.db.SQLite.BaseDeDatosViewModel
 import com.example.myapplication.screen.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,8 +26,7 @@ class MainActivity : ComponentActivity() {
 
     private var catsFactCalled = false
 
-    //@Inject
-    lateinit var baseDeDatosViewModel: BaseDeDatosViewModel
+    private val baseDeDatosViewModel: BaseDeDatosViewModel by viewModels()
 
     @Inject
     lateinit var catFactApi: CatFactApi
@@ -38,12 +34,6 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("Range")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-
-        //tablaRoomViewModel = ViewModelProvider(this).get(TablaRoomViewModel::class.java)
-
-        baseDeDatosViewModel = ViewModelProvider(this).get(BaseDeDatosViewModel::class.java)
 
         datosTablaSQL()
         datosTablaRoom()
@@ -76,7 +66,6 @@ class MainActivity : ComponentActivity() {
         baseDeDatosViewModel.insertarTipo("Normal", "Volador")
         baseDeDatosViewModel.insertarTipo("Tierra", "Hada")
     }
-
 
     // Introduce información el la base de datos Room
     private fun datosTablaRoom() {

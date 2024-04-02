@@ -9,11 +9,9 @@ class BaseDeDatosHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_N
 
     override fun onCreate(db: SQLiteDatabase) {
     db.execSQL(SQL_CREATE_ENTRIES)
-
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-
     }
 
     companion object {
